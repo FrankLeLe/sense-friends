@@ -5,6 +5,7 @@ export async function GET() {
     client_id: process.env.SECONDME_CLIENT_ID!,
     redirect_uri: process.env.SECONDME_REDIRECT_URI!,
     response_type: "code",
+    scope: "user.info user.info.shades user.info.softmemory chat",
     state: crypto.randomUUID(),
   });
 

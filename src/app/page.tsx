@@ -8,7 +8,19 @@ export default function SplashPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => router.replace("/login"), 3000);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (data.authenticated) {
+          router.replace("/ai-chat");
+        } else {
+          router.replace("/login");
+        }
+      } catch {
+        router.replace("/login");
+      }
+    }, 3000);
     return () => clearTimeout(timer);
   }, [router]);
 

@@ -1,8 +1,22 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const detail = searchParams.get("detail");
+
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center px-6"
@@ -18,6 +32,17 @@ export default function LoginPage() {
             用 AI 发现你的口味DNA，匹配对味的人
           </p>
         </div>
+
+        {error && (
+          <div className="w-full rounded-xl border p-4 text-center" style={{ borderColor: "#F44336", background: "#FFF5F5" }}>
+            <p className="text-sm font-medium" style={{ color: "#F44336" }}>
+              登录失败: {error}
+            </p>
+            {detail && (
+              <p className="mt-1 break-all text-xs" style={{ color: "#7A6B5D" }}>{detail}</p>
+            )}
+          </div>
+        )}
 
         <a
           href="/api/auth/login"

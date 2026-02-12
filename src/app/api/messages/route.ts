@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
   const matchId = request.nextUrl.searchParams.get("matchId");
 
   if (matchId) {
-    // Get messages for a specific match
     const messages = await prisma.directMessage.findMany({
       where: { matchId },
       include: { sender: { select: { id: true, name: true, avatarUrl: true } } },
@@ -36,14 +35,32 @@ export async function GET(request: NextRequest) {
     orderBy: { updatedAt: "desc" },
   });
 
+  // Count unread per match
+  const unreadCounts = await Promise.all(
+    matches.map(async (m) => {
+      const count = await prisma.directMessage.count({
+        where: {
+          matchId: m.id,
+          senderId: { not: session.user.id },
+          read: false,
+        },
+      });
+      return { matchId: m.id, count };
+    })
+  );
+  const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.matchId, u.count]));
+
   const conversations = matches.map((m) => {
     const other = m.userAId === session.user.id ? m.userB : m.userA;
     const lastMsg = m.messages[0];
     return {
       matchId: m.id,
+      score: m.score,
       user: other,
       lastMessage: lastMsg?.content || null,
       lastMessageAt: lastMsg?.createdAt || m.createdAt,
+      lastMessageType: lastMsg?.type || "text",
+      unreadCount: unreadMap[m.id] || 0,
     };
   });
 
@@ -56,9 +73,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { matchId, content } = await request.json();
+  const { matchId, content, type = "text", metadata } = await request.json();
 
-  // Verify user is part of this match and it's unlocked
   const match = await prisma.match.findFirst({
     where: {
       id: matchId,
@@ -79,6 +95,8 @@ export async function POST(request: NextRequest) {
       matchId,
       senderId: session.user.id,
       content,
+      type,
+      metadata: metadata ? JSON.stringify(metadata) : null,
     },
     include: { sender: { select: { id: true, name: true, avatarUrl: true } } },
   });

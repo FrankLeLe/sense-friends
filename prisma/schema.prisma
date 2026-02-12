@@ -8,21 +8,30 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String?  @unique
-  name           String?
-  avatarUrl      String?
-  route          String?
-  accessToken    String
-  refreshToken   String
-  tokenExpiresAt DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  sessions       Session[]
-  dnaProfile     DnaProfile?
-  matchesAsA     Match[]         @relation("MatchUserA")
-  matchesAsB     Match[]         @relation("MatchUserB")
-  sentMessages   DirectMessage[] @relation("MessageSender")
+  id              String   @id @default(cuid())
+  email           String?  @unique
+  name            String?
+  avatarUrl       String?
+  route           String?
+  industry        String?
+  job             String?
+  mbti            String?
+  ageRange        String?
+  bio             String?
+  healthCertified Boolean  @default(false)
+  healthCertUrl   String?
+  balance         Int      @default(0)
+  accessToken     String
+  refreshToken    String
+  tokenExpiresAt  DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  sessions        Session[]
+  dnaProfile      DnaProfile?
+  matchesAsA      Match[]         @relation("MatchUserA")
+  matchesAsB      Match[]         @relation("MatchUserB")
+  sentMessages    DirectMessage[] @relation("MessageSender")
+  transactions    Transaction[]
 }
 
 model Session {
@@ -47,17 +56,22 @@ model DnaProfile {
 }
 
 model Match {
-  id         String   @id @default(cuid())
-  userAId    String
-  userBId    String
-  userA      User     @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
-  userB      User     @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
-  score      Int      @default(0)
-  unlocked   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userAId        String
+  userBId        String
+  userA          User     @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB          User     @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  score          Int      @default(0)
+  unlocked       Boolean  @default(false)
+  restaurantName String?
+  budget         String?
+  paymentRule    String?
+  icebreaker     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  messages   DirectMessage[]
+  messages       DirectMessage[]
+  transactions   Transaction[]
 
   @@unique([userAId, userBId])
 }
@@ -69,5 +83,19 @@ model DirectMessage {
   senderId  String
   sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
   content   String
+  type      String   @default("text")
+  metadata  String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  amount    Int
+  type      String
   createdAt DateTime @default(now())
 }

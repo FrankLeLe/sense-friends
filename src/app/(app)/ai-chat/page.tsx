@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ChatBubble from "@/components/ChatBubble";
 import QuestionSelector from "@/components/QuestionSelector";
+import VoiceInput from "@/components/VoiceInput";
 import { questions } from "@/lib/questions";
 
 interface Message {
@@ -135,6 +136,7 @@ export default function AIChatPage() {
                   className="flex-1 rounded-full border bg-white px-4 py-2 text-sm outline-none focus:border-[#FF8A00]"
                   style={{ borderColor: "#E8D4B4" }}
                 />
+                <VoiceInput onResult={(text) => setFreeInput((prev) => prev + text)} />
                 <button type="submit" className="btn-primary px-4 py-2 text-sm">发送</button>
               </form>
             </div>

@@ -82,6 +82,15 @@ Return ONLY valid JSON in this exact format:
       dnaData = generateFallbackDna(answers);
     }
 
+    // Save user attributes from answers
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        industry: answers.industry || undefined,
+        mbti: answers.mbti || undefined,
+      },
+    });
+
     // Save to database
     const dna = await prisma.dnaProfile.upsert({
       where: { userId: session.user.id },
@@ -107,6 +116,13 @@ Return ONLY valid JSON in this exact format:
     console.error("DNA generation error:", error);
     // Use fallback on any error
     const dnaData = generateFallbackDna(answers);
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        industry: answers.industry || undefined,
+        mbti: answers.mbti || undefined,
+      },
+    });
     const dna = await prisma.dnaProfile.upsert({
       where: { userId: session.user.id },
       update: {

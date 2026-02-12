@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const tabs = [
   { href: "/ai-chat", label: "对话", icon: ChatIcon },
   { href: "/match", label: "匹配", icon: MatchIcon },
-  { href: "/messages", label: "消息", icon: MessageIcon },
+  { href: "/messages", label: "消息", icon: MessageIcon, badge: true },
   { href: "/profile", label: "我的", icon: ProfileIcon },
 ];
 
@@ -52,6 +53,19 @@ function ProfileIcon({ active }: { active: boolean }) {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    function fetchUnread() {
+      fetch("/api/messages/unread-count")
+        .then((r) => r.json())
+        .then((d) => { if (d.code === 0) setUnreadCount(d.data.count); })
+        .catch(() => {});
+    }
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <nav
@@ -65,9 +79,14 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-1"
+              className="relative flex flex-col items-center gap-0.5 px-3 py-1"
             >
               <tab.icon active={active} />
+              {tab.badge && unreadCount > 0 && (
+                <span className="absolute -right-0.5 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
               <span
                 className="text-[10px] font-medium"
                 style={{ color: active ? "#FF8A00" : "#7A6B5D" }}

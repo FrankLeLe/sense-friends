@@ -13,12 +13,12 @@ export async function getSession() {
 
   if (!session || session.expiresAt < new Date()) {
     if (session) {
-      await prisma.session.delete({ where: { id: sessionId } });
+      await prisma.session.delete({ where: { id: sessionId } }).catch(() => {});
     }
     return null;
   }
 
-  // Check if token needs refresh
+  // Try to refresh token if expired, but don't kill session on failure
   if (session.user.tokenExpiresAt < new Date()) {
     try {
       const refreshed = await refreshToken(session.user.refreshToken);
@@ -32,8 +32,8 @@ export async function getSession() {
       });
       session.user.accessToken = refreshed.accessToken;
     } catch {
-      await prisma.session.delete({ where: { id: sessionId } });
-      return null;
+      // Token refresh failed — session is still valid, just can't call SecondMe API
+      console.warn("[session] Token refresh failed, session still valid");
     }
   }
 

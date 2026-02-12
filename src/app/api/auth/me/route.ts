@@ -14,6 +14,13 @@ export async function GET() {
       name: session.user.name,
       email: session.user.email,
       avatarUrl: session.user.avatarUrl,
+      industry: session.user.industry,
+      job: session.user.job,
+      mbti: session.user.mbti,
+      ageRange: session.user.ageRange,
+      bio: session.user.bio,
+      healthCertified: session.user.healthCertified,
+      balance: session.user.balance,
     },
   });
 }
