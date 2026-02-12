@@ -36,6 +36,24 @@ yarn-error.log*
 # vercel
 .vercel
 
+# secondme config (contains secrets)
+.secondme/
+
+# prisma
+prisma/dev.db
+prisma/dev.db-journal
+dev.db
+dev.db-journal
+
+# claude
+.claude/
+
+# misc generated
+nul
+image-src/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma

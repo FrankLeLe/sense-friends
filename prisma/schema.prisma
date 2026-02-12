@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String?  @unique
+  name           String?
+  avatarUrl      String?
+  route          String?
+  accessToken    String
+  refreshToken   String
+  tokenExpiresAt DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  sessions       Session[]
+  dnaProfile     DnaProfile?
+  matchesAsA     Match[]         @relation("MatchUserA")
+  matchesAsB     Match[]         @relation("MatchUserB")
+  sentMessages   DirectMessage[] @relation("MessageSender")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model DnaProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  slogan     String
+  tags       String
+  radarData  String
+  answers    String   @default("{}")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Match {
+  id         String   @id @default(cuid())
+  userAId    String
+  userBId    String
+  userA      User     @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB      User     @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  score      Int      @default(0)
+  unlocked   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  messages   DirectMessage[]
+
+  @@unique([userAId, userBId])
+}
+
+model DirectMessage {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
